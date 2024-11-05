@@ -186,6 +186,8 @@ pub fn init() {
         roc_fx_applicationError as _,
         roc_fx_parseMarkdown as _,
         roc_fx_findFiles as _,
+        roc_fx_joinFilePath as _,
+        roc_fx_readFile as _,
         roc_fx_writeFile as _,
     ];
 
@@ -219,6 +221,37 @@ pub extern "C" fn roc_fx_findFiles(dir_path: &RocStr) -> RocResult<RocList<ssg::
 #[no_mangle]
 pub extern "C" fn roc_fx_parseMarkdown(file_path: &RocStr) -> RocResult<RocStr, RocStr> {
     match ssg::parse_markdown(PathBuf::from(file_path.as_str().to_string())) {
+        Ok(content) => RocResult::ok(content.as_str().into()),
+        Err(msg) => RocResult::err(msg.as_str().into()),
+    }
+}
+
+#[no_mangle]
+pub extern "C" fn roc_fx_joinFilePath(
+    left_path: &RocStr,
+    right_path: &RocStr,
+) -> RocResult<RocStr, RocStr> {
+    let left_path_string = left_path.as_str().to_string();
+    let right_path_string = right_path.as_str().to_string();
+    let left_path_buf = PathBuf::from(&left_path_string);
+    let right_path_buf = PathBuf::from(&right_path_string);
+    let joined_path_buf = ssg::join_file_path(left_path_buf, right_path_buf);
+    match joined_path_buf.to_str() {
+        Some(path) => RocResult::ok(path.into()),
+        _ => RocResult::err(
+            format!(
+                "Failed to join path \"{}\" with \"{}\"",
+                left_path_string, right_path_string
+            )
+            .as_str()
+            .into(),
+        ),
+    }
+}
+
+#[no_mangle]
+pub extern "C" fn roc_fx_readFile(file_path: &RocStr) -> RocResult<RocStr, RocStr> {
+    match ssg::read_file(&PathBuf::from(file_path.as_str().to_string())) {
         Ok(content) => RocResult::ok(content.as_str().into()),
         Err(msg) => RocResult::err(msg.as_str().into()),
     }

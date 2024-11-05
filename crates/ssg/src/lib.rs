@@ -125,16 +125,7 @@ fn find_files_help(dir: &Path, file_paths: &mut Vec<PathBuf>) -> std::io::Result
 
 /// Parse a markdown file into html
 pub fn parse_markdown(input_file: PathBuf) -> Result<String, String> {
-    let content_md = match fs::read_to_string(&input_file) {
-        Ok(str) => str,
-        Err(err) => {
-            return Err(format!(
-                "Error reading {}: {}",
-                input_file.to_str().unwrap_or("an input file"),
-                err
-            ))
-        }
-    };
+    let content_md = read_file(&input_file)?;
 
     let mut content_html = String::new();
     let mut options = Options::all();
@@ -253,6 +244,23 @@ pub fn parse_markdown(input_file: PathBuf) -> Result<String, String> {
     html::push_html(&mut content_html, parser_with_highlighting.into_iter());
 
     Ok(content_html)
+}
+
+// Join two file paths
+pub fn join_file_path(left_path: PathBuf, right_path: PathBuf) -> PathBuf {
+    left_path.join(right_path)
+}
+
+/// Read the contents of a file
+pub fn read_file(input_file: &PathBuf) -> Result<String, String> {
+    match fs::read_to_string(input_file) {
+        Ok(str) => Ok(str),
+        Err(err) => Err(format!(
+            "Error reading {}: {}",
+            input_file.to_str().unwrap_or("an input file"),
+            err
+        )),
+    }
 }
 
 /// Write the contents to file

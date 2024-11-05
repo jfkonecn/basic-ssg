@@ -8,6 +8,11 @@ import pf.Html.Attributes exposing [class, httpEquiv, href, rel, content, lang, 
 main : Args -> Task {} _
 main = \{ inputDir, outputDir } ->
 
+    llmsRelPath = Types.toRelPath "llms.txt"
+    llmsFilePath = SSG.joinFilePath! inputDir llmsRelPath
+    llmsFileContents = SSG.readFile! llmsFilePath
+    SSG.writeFile! { outputDir, relpath: llmsRelPath, content: "$(llmsFileContents)\nSome extra content" }
+
     # get the path and url of markdown files in content directory
     files = SSG.files! inputDir
 
